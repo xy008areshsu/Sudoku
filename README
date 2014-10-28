@@ -1,0 +1,120 @@
+The Sudoku Gui app will solve every Sudoku puzzle if it is solvable. It follows a Model View Controller (MVC) design
+pattern to develop a gui app. The Model part is in solver.py, which represents the states of the puzzle, and the algorithm
+used fo solving the puzzle. The View and Controller parts are in gui.py, which uses pygame for python 3 for rendering.
+
+
+Parts needed before running:
+
+    To run the gui app, make sure the following are properly installed in your computer (this app was fully tested under
+    windows and linux, but not yet under mac os):
+
+    *   Python 3 interpreter:
+        This Sudoku project was developed using python 3, rather than python 2. There are some
+        syntax differences between the two versions of python (e.g. print), and some package names are changed (e.g.
+        Tkinter for python 2, and tkinter for python 3). To install python 3, see: https://www.python.org/downloads/
+
+    *   pygame for python 3:
+        Since tkinter is already installed in python by default (although under some OS, you might
+        need to make sure tcl/Tk is properly installed to use tkinter), you only need to install pygame for graphical
+        simulation of this app. To install pygame under windows, see: http://www.lfd.uci.edu/~gohlke/pythonlibs/#pygame
+        To install pygame under ubuntu linux, type in the command line: sudo apt-get install python3-pygame, or you might
+        want to see their official website: http://www.pygame.org/download.shtml
+
+
+Run the gui app:
+
+    * To run the app under linux, go to the root directory of the app and type in the command line: python3 gui.py.
+    * To run under windows, you can use any python IDE, for example pyCharm, or use terminal tools like cygwin.
+    * After the app starts, there are following steps to run:
+
+        1.  Click the "load csv file" button and choose the proper csv file as an input. So far, the app only supports a
+            csv file as the input, which contains 9 * 9 cells, each with a value of the puzzle. If the value is 0, this
+            square or cell is not solved yet, otherwise the value should be any digit from 1 to 9.
+
+        2.  Then the app will try to solve the puzzle. 99% of the Sudoku puzzles are solvable, so if the app finds a
+            valid solution, it will automatically pop up a new window showing the two states of the puzzle, initial state
+            and the solved final state. You can click the mouse to toggle between the initial and the final state of the
+            puzzle
+
+        3.  The app will also generate an output csv file with the name of initial csv file plus '_sol' (e.g. initial puzzle:
+            file.csv, output: file_sol.csv), and store it at the same location as the initial csv file. So it is a good idea
+            to put both files into some specific folder, such as the Data folder.
+
+        4.  This app currently uses back-tracking search plus forward checking as the algorithm to solve the puzzle (see the
+            solver.py file). Most of the puzzles can be solved less than 50 ms, but some more difficult ones might take 4 to
+            5 seconds to solve. So after you choose the csv file, if the result does not show up (the new pop up window)
+            immediately, just be patient.
+
+
+Modeling of the Sudoku puzzle:
+
+    *   The problem is a classic Constraints Satisfaction Problem (CSP).
+    *   To model this problem, we have the following notations:
+        1.  Rows are represented as: 'ABCDEFGHI'
+        2.  Cols are represented as: '123456789'
+        3.  Each square of the 81 squares can be represented as a combination of row number of column number, e.g., 'A1'
+        4.  The value of each square can be a number from 1 to 9, or 0 for unsolved square.
+
+    *   EXAMPLE:
+
+        A1 A2 A3| A4 A5 A6| A7 A8 A9    4 0 0 |0 0 0 |8 0 5     4 1 7 |3 6 9 |8 2 5
+        B1 B2 B3| B4 B5 B6| B7 B8 B9    0 3 0 |0 0 0 |0 0 0     6 3 2 |1 5 8 |9 4 7
+        C1 C2 C3| C4 C5 C6| C7 C8 C9    0 0 0 |7 0 0 |0 0 0     9 5 8 |7 2 4 |3 1 6
+       ---------+---------+---------    ------+------+------    ------+------+------
+        D1 D2 D3| D4 D5 D6| D7 D8 D9    0 2 0 |0 0 0 |0 6 0     8 2 5 |4 3 7 |1 6 9
+        E1 E2 E3| E4 E5 E6| E7 E8 E9    0 0 0 |0 8 0 |4 0 0     7 9 1 |5 8 6 |4 3 2
+        F1 F2 F3| F4 F5 F6| F7 F8 F9    0 0 0 |0 1 0 |0 0 0     3 4 6 |9 1 2 |7 5 8
+       ---------+---------+---------    ------+------+------    ------+------+------
+        G1 G2 G3| G4 G5 G6| G7 G8 G9    0 0 0 |6 0 3 |0 7 0     2 8 9 |6 4 3 |5 7 1
+        H1 H2 H3| H4 H5 H6| H7 H8 H9    5 0 0 |2 0 0 |0 0 0     5 7 3 |2 9 1 |6 8 4
+        I1 I2 I3| I4 I5 I6| I7 I8 I9    1 0 4 |0 0 0 |0 0 0     1 6 4 |8 7 5 |2 9 3
+
+        Each square has exactly 3 units, which are the row collection, the column collection and the box of the same square.
+        The peers of a square are the elements that share the same units with the square.
+        E.g. 'C2' has the following units and peers:
+
+        A2   |         |                    |         |            A1 A2 A3|         |
+        B2   |         |                    |         |            B1 B2 B3|         |
+        C2   |         |            C1 C2 C3| C4 C5 C6| C7 C8 C9   C1 C2 C3|         |
+    ---------+---------+---------  ---------+---------+---------  ---------+---------+---------
+        D2   |         |                    |         |                    |         |
+        E2   |         |                    |         |                    |         |
+        F2   |         |                    |         |                    |         |
+    ---------+---------+---------  ---------+---------+---------  ---------+---------+---------
+        G2   |         |                    |         |                    |         |
+        H2   |         |                    |         |                    |         |
+        I2   |         |                    |         |                    |         |
+
+
+    *   We used a dictionary data structure to represent the possible values of each square. E.g.{'A1':'12349', 'A2':'8', ...}
+
+
+Algorithm: (to solve Constraint Satisfaction Problem, CSP)
+
+    *   A common way to solve the puzzle is to use recursive back-tracking search, plus forward checking.
+    *   There are two rules of thumb can be used for forward checking:
+        1.  If a square has only one possible value, then eliminate that value from the square's peers.
+        2.  If a unit has only one possible place for a value, then put the value there.
+    *   The ordering of choosing which square as the next candidate also matters. We used a rule of thumb called "
+        minimum remaining values", which means we choose a square with minimum number of remaining possible values.
+
+
+TODO list: a couple of things can be done to improve the app, due to the limitation of less than one week's development time
+
+    *   Add more features to the Gui, such as rendering the intermediate steps to solve the puzzle, and the total time
+        to solve it.
+    *   Use a web development framework, such as Python and Django, to make it as a web app. Since it is still a bit
+        inconvenient to install all of the required components before running this standalone app. As a web app, user just
+        needs to enter a URL and that would be it.
+    *   Feature of solving multiple puzzles in a row. Right now our app can only solve a single puzzle at a time
+    *   Improve the algorithm. Although most of the puzzles can be solved very quickly, some of them still need 5 or 6
+        seconds.
+
+References:
+
+    *   http://www.scanraid.com/BasicStrategies.htm
+    *   http://www.sudokudragon.com/sudokustrategy.htm
+    *   http://norvig.com/sudoku.html
+
+
+
