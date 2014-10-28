@@ -287,7 +287,10 @@ class Solver:
         def unitsolved(unit): return set(values[square] for square in unit) == set(self.DIGITS)
         return values is not False and all(unitsolved(unit) for unit in self.UNITLISTS)
 
-
+grid = '...57..3.1......2.7...234......8...4..7..4...49....6.5.42...3.....7..9....18.....'
+grid = grid.replace('.', '0')
+solver = Solver(grid)
+utility.write_csv('./Data/hard4.csv', solver.init_values)
 
 ## References used:
 ## http://www.scanraid.com/BasicStrategies.htm
